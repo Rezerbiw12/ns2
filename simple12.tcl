@@ -10,7 +10,7 @@ set val(ifq)          Queue/DropTail/PriQueue
 set val(ll)           LL                                   
 set val(ant)          Antenna/OmniAntenna          
 set val(ifqlen)       50                        
-set val(nn)           4                           
+set val(nn)           5                          
 set val(rp)           AODV                 
 set val(x) 	      1000   ;# X dimension of the topography               
 set val(y) 	      1000   ;# Y dimension of the topography               
@@ -80,7 +80,10 @@ $node_(2) set Y_ 200.0
 $node_(2) set Z_ 100.0
 $node_(3) set X_ 350.0
 $node_(3) set Y_ 100.0 
-$node_(3) set Z_ 100.0 
+$node_(3) set Z_ 100.0
+$node_(4) set X_ 550.0
+$node_(4) set Y_ 100.0 
+$node_(4) set Z_ 100.0 
 $ns_ at 2.0 "$node_(1) setdest 350.0 800.0 100.0"
 $ns_ at 7.0 "$node_(1) setdest 350.0 200.0 200.0"
 
@@ -102,14 +105,24 @@ set udp_(1) [new Agent/UDP]
 $udp_(1) set fid_ 2
 $ns_ attach-agent $node_(3) $udp_(1)
 
+set udp_(2) [new Agent/UDP]
+$udp_(2) set fid_ 3
+$ns_ attach-agent $node_(4) $udp_(2)
+
 # Null Agent to receive Packets for Node 0
 set null_(0) [new Agent/Null]
 $null_(0) set fid_ 1
 $ns_ attach-agent $node_(2) $null_(0)
 
+# Null Agent to receive Packets for Node 3
 set null_(1) [new Agent/Null]
 $null_(1) set fid_ 3
-$ns_ attach-agent $node_(1) $null_(1)
+$ns_ attach-agent $node_(4) $null_(1)
+
+# Null Agent to receive Packets for Node 4
+set null_(2) [new Agent/Null]
+$null_(2) set fid_ 3
+$ns_ attach-agent $node_(1) $null_(2)
 
 # Constant Bit rate traffic generator
 set cbr_(0) [new Application/Traffic/CBR]
@@ -130,6 +143,16 @@ $cbr_(1) set maxpkts_ 10000
 $cbr_(1) attach-agent $udp_(1)
 $ns_ connect $udp_(1) $null_(1)
 $ns_ at $start_time "$cbr_(1) start"
+
+# Constant Bit rate traffic generator
+set cbr_(2) [new Application/Traffic/CBR]
+$cbr_(2) set packetSize_ 512
+$cbr_(2) set interval_ 0.1
+$cbr_(2) set random_ 0
+$cbr_(2) set maxpkts_ 10000
+$cbr_(2) attach-agent $udp_(2)
+$ns_ connect $udp_(2) $null_(2)
+$ns_ at $start_time "$cbr_(2) start"
 
 # Tell nodes when the simulation ends
 for {set i 0} {$i< $val(nn) } {incr i} {
